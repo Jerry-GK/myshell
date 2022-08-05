@@ -140,7 +140,7 @@ string GetRealString(string txt);//¶Ô×Ö·û´®½øĞĞ´¦Àí¡¢±äÁ¿·­Òë£¬¿ÉÄÜ´æÔÚÈ¥ÒıºÅ¡¢Ì
 void send_output_msg(string msg);//Ö¸ÁîÊä³öĞÅÏ¢
 void send_err_msg(string msg);//Ö¸ÁîÊä³ö´íÎó
 void send_terminal_msg(string msg);//ÏµÍ³ÏòÖÕ¶Ë·¢ËÍĞÅÏ¢
-int cmp_time(const timespec& t1, const timespec& t2);//±È½ÏÁ½¸öÊ±¼ä±äÁ¿¡£-1£ºĞ¡ÓÚ£»0£ºµÈÓÚ£»1£º´óÓÚ
+int cmp_time(const time_t& t1, const time_t& t2);//±È½ÏÁ½¸öÊ±¼ä±äÁ¿¡£-1£ºĞ¡ÓÚ£»0£ºµÈÓÚ£»1£º´óÓÚ
 
 //ÃüÁîÖ´ĞĞº¯Êı
 void cmd_cd(vector<string>  dirs);//cd: ¸Ä±ä¹¤×÷Ä¿Â¼
