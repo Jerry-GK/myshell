@@ -1,0 +1,235 @@
+#myshell#
+myshell用户手册：
+	1.内部指令：cd, clr, dir, echo, exec, exit, bg, fg, jobs, help, pwd, test, time, umask, set, unset, kill, suspend
+	其中cd, set, unset, umask, exit是myshell的嵌入指令，直接在myshell进程中执行，不生成子进程
+	其它内部指令会生成子进程并在子进程内执行。
+
+	2.外部调用：除了内部指令外的指令将被解释为外部调用，可以是系统指令或者可执行文件，也会生成子进程
+
+	3.支持重定向："<", "0<"为输入重定向；">", "1>"为输出重定向（覆盖）；">>", "1>>"为输出重定向（追加）；"2>"为错误重定向（覆盖）；"2>>"为错误重定向（追加）.
+	重定向符号两侧必须留有空格，正确形式示范：
+	echo hey >> file
+	对同一输入或输出做多次重定向操作，以最后一次重定向为准。重定向仅在当前执行的指令中有效。
+
+	4.支持管道符：使用"|"分隔多个指令，前一个指令的输出是下一个指令的输入. 第一个指令的输入是标准输入, 最后一个指令的输出是标准输出.
+	支持管道操作和重定向同时使用，重定向标准输出时，应重定向最后一个指令，否则会被管道文件覆盖.
+	正确形式示范：
+	./input | ./output > file
+
+	5.支持执行外部脚本：命令./myshell batchfile表示从batchfile中逐行获取命令并执行.
+
+	6.可用"help 指令名"获取对应指令的详细帮助. 直接输入help可以查看总体用户手册 
+
+	7.支持进程管理：ctrl+z能挂起前台作业，ctrl+c能终止前台作业. 指令后加&可以后台运行. bg、fg、jobs指令的用法请查询对应的帮助手册.
+	总体关系如下
+	FG: 前台运行
+	BG: 后台运行
+	SUSPENDED: 挂起（停止）状态
+	KILLED: 已终止
+	DONE: 正常执行结束
+	---------------------------------
+	cmd  --->  FG
+    cmd &  --->  BG
+	---------------------------------
+    kill: BG -> KILLED
+    suspend: BG -> SUSPENDED
+    ctrl + c: FG -> KILLED 
+    ctrl + z: FG -> SUSPENDED
+    fg: SUSPENDED -> FG  /  BG -> FG
+    bg: SUSPENDED -> BG
+	---------------------------------
+	FG / BG  ...--->  DONE / KILLED / SUSPENDED
+    （前台最多有一个子进程在运行） 
+
+
+#bg#
+命令格式：
+	bg pid1 pi2 ... pidN
+指令解释：
+	将被挂起的进程重新在后台运行, 支持同时操作多个进程
+
+#cd#
+命令格式：
+	cd pathname
+指令解释：
+	进入目录，支持绝对路径和相对路径，支持~, ., ..等特殊符号的路径解释。支持“$VAR”型变量的翻译
+
+#clr#
+命令格式：
+	clr
+指令解释：
+	清屏。
+
+#dir#
+命令格式：
+	dir
+	dir pathname1, pathname2, ... , pathnameN
+指令解释：
+	无参执行dir指令时表示列出当前目录下的文件。
+	有参数时dir列出参数指定的目录下的文件。支持linux的路径格式。支持同时列出多个目录的信息
+
+#echo#
+命令格式：
+	echo arg1 arg2 arg3 ... argN
+指令解释：
+	输出内容，参数argi可以是“$VAR”型变量。
+	支持引号的翻译处理：双引号或不加引号将解释变量，单引号不解释变量，引号均不会被输出
+
+#ssleep#
+命令格式：
+	ssleep sec
+指令解释：
+	系统睡眠sec秒
+
+#exec#
+命令格式：
+	exec ProgramName
+指令解释：
+	执行外部程序，并退出shell。如果ProgramName不是内部指令，则与直接输入执行ProgramName效果相同，只不过后者不会退出shell。
+
+#exit#
+命令格式：
+	exit
+指令解释：
+	杀死全部子进程，退出MyShell。
+
+#fg#
+命令格式：
+	fg pid
+指令解释：
+	把指定pid的进程放到前台执行。只能用于处理正在后台运行或被挂起的进程。
+
+#help#
+命令格式：
+	help
+	help cmd
+指令解释：
+	无参时显示myshell用户手册，有参数时显示指令cmd的帮助信息。
+
+#jobs#
+命令格式：
+	jobs
+指令解释：
+	输出所有未结束的进程信息。
+
+#pwd#
+命令格式：
+	pwd
+指令解释：
+	输出当前工作目录路径。
+
+#set#
+命令格式：
+	set
+	set var
+	set var value
+指令解释：
+	无参：显示所有环境变量及其值
+	一个参数：显示指定环境变量的值
+	两个参数：设定或创建环境变量，值为value
+
+#test#
+命令格式：
+	文件存在:
+		test -e File
+	文件存在且可读:
+		test -r File
+	文件存在且可写:
+		test -w File
+	文件存在且可执行:
+		test -x File
+	文件存在且至少有一个字符:
+		test -s File
+	文件为目录文件:
+		test -d File
+	文件为普通文件:
+		test -f File
+	文件为字符型特殊文件:
+		test -c File
+	文件为块特殊文件:
+		test -b File
+	文件为符号链接:
+		test -h File
+		test -L File
+	文件为命名管道:
+		test -p File
+	文件为嵌套字:
+		test -S File
+	文件被当前实际组拥有:
+		test -G File
+	文件被当前实际用户拥有:
+		test -O File
+	文件设置了setgid bit:
+		test -g File
+	文件设置了setuid bit:
+		test -u File
+	文件设置了sticky bit:
+		test -k File
+	字符串长度非0:
+		test -n String
+	字符串长度为0:
+		test -z String
+	文件1和文件2的设备号和inode相同:
+		test File1 -ef File2
+	文件1比文件2新:
+		test File1 -nt File2
+	文件1比文件2旧:
+		test File1 -ot File2
+	字符串相等:
+		test String1 = String2
+	字符串不等:
+		test String1 != String2
+	整数相等:
+		test Integer1 -eq Integer2
+	整数大于等于:
+		test Integer1 -ge Integer2
+	整数大于:
+		test Integer1 -gt Integer2
+	整数小于等于:
+		test Integer1 -le Integer2
+	整数小于:
+		test Integer1 -lt Integer2
+	整数不相等:
+		test Integer1 -ne Integer2
+
+指令解释：
+	测试条件，输出true或false。支持引用变量
+
+#time#
+命令格式：
+	time
+指令解释：
+	输出当前的系统时间。
+
+#umask#
+命令格式：
+	umask
+	umask value
+指令解释：
+	无参时，表示输出当前的umask值（8进制）。
+	有参数时，接受三位8进制值并修改mask的值，高位补0。
+
+#unset#
+命令格式：
+	unset var1, var2, ..., varN
+指令解释：
+	删除环境变量，var必须存在，支持同时删除多个变量。
+
+#kill#
+命令格式：
+	kill pid1, pid2, ..., pidN
+指令解释：
+	强制终止对应pid的进程，该进程必须正在后台运行或正被挂起。支持同时终止多个进程
+
+#suspend#
+命令格式：
+	suspend pid1, pid2, ..., pidN
+指令解释：
+	挂起对应pid的进程，该进程必须正在后台运行。支持同时挂起多个进程
+
+#ctrl+z#
+	有前台进程时挂起前台进程，否则无效果。
+
+#ctrl+c#
+	有前台进程时终止该前台进程
+	无前台进程时退出shell（相当于exit）
